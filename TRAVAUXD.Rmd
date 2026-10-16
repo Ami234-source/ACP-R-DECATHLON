@@ -1,0 +1,114 @@
+---
+title: "ANALYSE DE DONNEES TRAVAUX DIRIGES 2"
+author: "Aminata FALL"
+date: "`r Sys.Date()`"
+output: 
+  prettydoc::html_pretty
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# CHARGEMENT DES LIBRARIES
+```{r message=FALSE, warning=FALSE}
+
+library("FactoMineR")
+library(factoextra)
+```
+
+# CHARGEMENT DU JEU DE DONNEES DECATHLON
+```{r}
+data(decathlon)
+```
+
+# IDENTIFICATION ET AFFICHAGE DE DONNEES ACTIVES
+```{r}
+decathlon_active=decathlon[1:23,1:6]
+head(decathlon_active)
+```
+
+Les données actives sont les données quantitatives qui permettront de réaliser l'ACP.
+
+
+# REALISATION DE L'ACP AVEC LES VARIABLES ET INDIVIDUS ILLUSTRATIVES
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+res_acp1 <- PCA(decathlon, quanti.sup=11:12, quali.sup=13)
+```
+
+En plus de variables qui appartiennent aux colonees de 1 à 6, les colonnes de 7 à 10 sont aussi des variables quantitaives qu'il serait interessant d'inclure dans la réalisation de l'ACP.
+En essayant de faire l'ACP sur les 6 premières colonnes (data_active) R ne m'a pas donné de résultat donc j'ai considéré toutes les colonnes de la base de données sauf les variables 11 et 12 comme données quantitatives supplémentaires et la colonne 13 comme variable qualitative supplémentaire.
+
+Dans le graphe, des individus nous constatons une répartion des athlètes par rapport à l'évènement auquel il ont compéti: Decastar ou OlympicG.
+Dans le graphe des variables,nous avons un cercle de corrélation entre les disciplines et le nombre de points obtenus mais également la corrélation entre les disciplines et le rang de l'athlète.  
+
+
+# AFFICHAGE DES VALEURS PROPRES
+```{r}
+eig_val=get_eigenvalue(res_acp1)
+eig_val
+```
+
+L'output nous donne 10 dimensions avec leur valeur propre respectives, la pourcentage de variance expliquée et le pourcentage de variance cumule.
+
+# REPRESENTATION DES VALEURS PROPRES
+```{r echo=FALSE, warning=FALSE}
+fviz_eig(res_acp1, addlabels=TRUE,ylim=c(0,80))
+```
+
+Interprétation: 
+
+Le graphique donne le pourcentage de variation expiquée en fonction des composantes principales. Le premier axe principal contient 32% de la variation des données.La porion de variance expliquée diminue au fur et à mesure avec chaque axe. Le deuxième axe donne 17% de la variabilité. Les deux premières composantes principales donnent en cumul une explication de 50% des informations contenues sur les données.En ajoutant un troixième composantes on arrive à retenir 64% de l'information.
+
+# RESULTAT DE L'ACP SUR LES VARIABLES ACTIVES
+```{r warning=FALSE}
+res_acp=PCA(decathlon_active,graph=FALSE,)
+print(res_acp)
+```
+
+# COMBIEN DE  COMPOSANTES PRINCIPALES CHOISIR:
+En utilisant la règle du coude, on trouve une proportion totale de variance expliquée de 50% avec les deux premières composantes.Donc on choisit les deux premières composantes principales.
+
+
+# CERCLE DE CORRELATION DES VARIABLES
+```{r echo=FALSE, warning=FALSE}
+fviz_pca_var(res_acp,col.var="black")
+
+```
+
+Interprétation:
+
+Les variables qui sont les mieux représentés dans le cercle de corrélation sont: Shotput, High jump, 400m, Hurdle, 100m et Long jump. 
+Les disciplines qui sont positivement corrélés entre eux sont : le Shotput, high jump et long jump. Le long jump est négativement corrélé avec le 100m, 110m hurdle et le 400m, cependant ils sont tous bien représentés sur la dimension 2(dim2).
+Le shotput et le high jump sont bien représentés sur les deux dimensions.
+
+
+# REPRESENTATION DE LA CONTRIBUTION DES VARIABLES
+```{r echo=FALSE, warning=FALSE}
+fviz_contrib(res_acp, choice="var", axes=1:2)
+```
+
+Les variables qui ont le plus contribuées à la formation de ces deux axes sont: le high jump et le 100m. Le Shotput et le 110m hurdle ont un contribution qui dépasse tout juste la moyenne.
+
+# QUALITE DE REPRESENTATION DES VARIABLES SUR LES DEUX PREMIERS AXES
+```{r echo=FALSE, warning=FALSE}
+fviz_cos2(res_acp, choice="var", axes=1:2)
+```
+
+Interprétation:
+
+Toutes les variables du graphique sont bien représentées dans les dimensions 1 et 2. Il ont tous un cosinus carré supérieur à 0,5.
+
+# GRAPHE DES INDIVIDUS ET VARIABLES ILLUSTRATIVES
+```{r echo=FALSE, warning=FALSE}
+fviz_pca_biplot(res_acp1,col.var="black")
+```
+
+
+
+Interprétation:
+
+On remarque que les individus tel que Serble, Clay et Karpov ont marqué le plus de points. Ils sont bon en High Jump, Long jump et Shot put qui sont des disciplines positivement correlées entre elles.Donc un individus qui a une bonne performance dans l'une de ces disciplines a tendance à être bon dans l'autre aussi. Le high jump, long jump et le shotput sont aussi les discplines qui donnent le plus de points aux athlètes et par conséquent ils ont aussi un bon rang dans la competition.
+Bourguiguon par exemple  qui est bien en 110m hurdel et 100m est moins bien classé. Il sera moins bon dans les disciplines qui sont négativement corrélées avec 110m Hurdle et le 100m comme le long Jump.
+On remarque aussi un outlier, Carsarsa qui ne s'est pas démarqué dans une discipline particulière. Ses performances ne ressemblent pas à ceux des autres groupes d'athlètes.
+
